@@ -15,14 +15,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getLocalStorageItem = (key: string) => {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : null;
+  } catch (error) {
+    console.error('Error accessing localStorage:', error);
+    return null;
+  }
+};
+
+const setLocalStorageItem = (key: string, value: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error('Error setting localStorage:', error);
+  }
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Check local storage for user data on mount
-    const storedUser = localStorage.getItem("user");
+    const storedUser = getLocalStorageItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      setUser(storedUser);
     }
   }, []);
 
@@ -31,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // In a real app, you would validate against a backend
-    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    const storedUsers = getLocalStorageItem("users") || [];
     const user = storedUsers.find(
       (u: any) => u.email === email && u.password === password
     );
@@ -47,14 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    setLocalStorageItem("user", userData);
   };
 
   const signup = async (email: string, password: string, name: string) => {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    const storedUsers = getLocalStorageItem("users") || [];
     
     if (storedUsers.some((u: any) => u.email === email)) {
       throw new Error("Email already exists");
@@ -68,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     storedUsers.push(newUser);
-    localStorage.setItem("users", JSON.stringify(storedUsers));
+    setLocalStorageItem("users", storedUsers);
 
     const userData = {
       id: newUser.id,
@@ -77,12 +95,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    setLocalStorageItem("user", userData);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    try {
+      localStorage.removeItem("user");
+    } catch (error) {
+      console.error('Error removing from localStorage:', error);
+    }
   };
 
   return (
