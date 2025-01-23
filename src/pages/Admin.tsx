@@ -1,6 +1,4 @@
-import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,33 +14,8 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function Admin() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
-
-  useEffect(() => {
-    // Check if user exists and has admin privileges
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Access Denied",
-        description: "Please login to access the admin panel.",
-      });
-      navigate("/login");
-      return;
-    }
-
-    if (!user.email.includes("admin")) {
-      toast({
-        variant: "destructive",
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-      });
-      navigate("/");
-      return;
-    }
-  }, [user, navigate, toast]);
 
   const handleEdit = (id: number) => {
     toast({
@@ -64,11 +37,6 @@ export default function Admin() {
       description: "Adding new product",
     });
   };
-
-  // Return null while checking authentication
-  if (!user || !user.email.includes("admin")) {
-    return null;
-  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">

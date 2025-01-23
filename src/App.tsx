@@ -32,10 +32,7 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/products" element={<Admin />} />
-              <Route path="/admin/users" element={<Admin />} />
-              <Route path="/admin/settings" element={<Admin />} />
+              <Route path="/admin/*" element={<Admin />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
