@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,15 +19,28 @@ export default function Admin() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
-    if (!user?.email.includes("admin")) {
+    // Check if user exists and has admin privileges
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "Please login to access the admin panel.",
+      });
+      navigate("/login");
+      return;
+    }
+
+    if (!user.email.includes("admin")) {
       toast({
         variant: "destructive",
         title: "Access Denied",
         description: "You don't have permission to access this page.",
       });
       navigate("/");
+      return;
     }
   }, [user, navigate, toast]);
 
@@ -52,7 +65,8 @@ export default function Admin() {
     });
   };
 
-  if (!user?.email.includes("admin")) {
+  // Return null while checking authentication
+  if (!user || !user.email.includes("admin")) {
     return null;
   }
 
@@ -63,71 +77,88 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8 flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-              <p className="mt-2 text-gray-600">Manage your product inventory</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {location.pathname === "/admin"
+                  ? "Dashboard"
+                  : location.pathname.split("/").pop()?.charAt(0).toUpperCase() +
+                    location.pathname.split("/").pop()?.slice(1)}
+              </h1>
+              <p className="mt-2 text-gray-600">
+                {location.pathname === "/admin"
+                  ? "Welcome to your admin dashboard"
+                  : `Manage your ${location.pathname.split("/").pop()}`}
+              </p>
             </div>
-            <Button onClick={handleAddProduct} className="flex items-center gap-2">
-              <Plus size={20} />
-              Add New Product
-            </Button>
+            {location.pathname.includes("/products") && (
+              <Button
+                onClick={handleAddProduct}
+                className="flex items-center gap-2"
+              >
+                <Plus size={20} />
+                Add New Product
+              </Button>
+            )}
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium">All Products</h2>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    Export
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Filter
-                  </Button>
+          {(location.pathname === "/admin/products" ||
+            location.pathname === "/admin") && (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-medium">All Products</h2>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      Export
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Filter
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.id}</TableCell>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>${product.price.toFixed(2)}</TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(product.id)}
-                        className="inline-flex items-center gap-1"
-                      >
-                        <Pencil size={16} />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(product.id)}
-                        className="inline-flex items-center gap-1"
-                      >
-                        <Trash2 size={16} />
-                        Delete
-                      </Button>
-                    </TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{product.id}</TableCell>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell>${product.price.toFixed(2)}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(product.id)}
+                          className="inline-flex items-center gap-1"
+                        >
+                          <Pencil size={16} />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(product.id)}
+                          className="inline-flex items-center gap-1"
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </div>
       </main>
     </div>
