@@ -33,6 +33,9 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/products" element={<Admin />} />
+              <Route path="/admin/users" element={<Admin />} />
+              <Route path="/admin/settings" element={<Admin />} />
             </Routes>
           </BrowserRouter>
           <Toaster />
