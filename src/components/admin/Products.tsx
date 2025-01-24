@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
@@ -12,10 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { supabase, isSupabaseConnected } from "@/lib/supabase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ProductForm } from "./ProductForm";
 
 export function Products() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showAddForm, setShowAddForm] = useState(false);
 
   if (!isSupabaseConnected()) {
     return (
@@ -41,6 +44,32 @@ export function Products() {
     },
   });
 
+  const addMutation = useMutation({
+    mutationFn: async (newProduct: any) => {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{
+          name: newProduct.name,
+          category: newProduct.category,
+          price: parseFloat(newProduct.price),
+          description: newProduct.description,
+          image: newProduct.image,
+        }])
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: "Product added",
+        description: "New product has been added successfully.",
+      });
+      setShowAddForm(false);
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -59,11 +88,8 @@ export function Products() {
     },
   });
 
-  const handleAddProduct = () => {
-    toast({
-      title: "Add Product",
-      description: "Adding new product",
-    });
+  const handleAddProduct = (data: any) => {
+    addMutation.mutate(data);
   };
 
   const handleEditProduct = (id: string) => {
@@ -85,11 +111,20 @@ export function Products() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Products Management</h2>
-        <Button onClick={handleAddProduct} className="flex items-center gap-2">
+        <Button 
+          onClick={() => setShowAddForm(true)} 
+          className="flex items-center gap-2"
+        >
           <Plus size={20} />
           Add New Product
         </Button>
       </div>
+
+      <ProductForm
+        open={showAddForm}
+        onOpenChange={setShowAddForm}
+        onSubmit={handleAddProduct}
+      />
 
       <Table>
         <TableHeader>
