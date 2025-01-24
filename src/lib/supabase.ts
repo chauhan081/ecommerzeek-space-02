@@ -4,8 +4,20 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Supabase URL and Anon Key are required. Please check your Supabase connection.');
-}
+// Create a dummy client if not connected to show a better error message
+export const supabase = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : createClient(
+      'https://placeholder.supabase.co',
+      'placeholder',
+      {
+        auth: {
+          persistSession: false
+        }
+      }
+    );
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Add an initialization check function
+export const isSupabaseConnected = () => {
+  return !!supabaseUrl && !!supabaseKey;
+};

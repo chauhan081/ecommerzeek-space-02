@@ -10,11 +10,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConnected } from "@/lib/supabase";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function Products() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  if (!isSupabaseConnected()) {
+    return (
+      <Alert variant="destructive" className="mb-4">
+        <AlertTitle>Connection Error</AlertTitle>
+        <AlertDescription>
+          Please connect to Supabase first. Click the Supabase menu in the top right to connect.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
