@@ -68,6 +68,14 @@ export function Products() {
       });
       setShowAddForm(false);
     },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add product. Please try again.",
+      });
+      console.error("Error adding product:", error);
+    },
   });
 
   const deleteMutation = useMutation({
